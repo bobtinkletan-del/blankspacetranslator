@@ -1,0 +1,106 @@
+# blankspaces_translator_26unique.py
+# Fully working Blankspaces translator with 26 unique invisible Unicode characters
+
+import string
+import sys
+import unicodedata
+
+# ---------------- 26 unique invisible Unicode characters ----------------
+INVISIBLES = [
+    '\u200b',  # ZERO WIDTH SPACE
+    '\u200c',  # ZERO WIDTH NON-JOINER
+    '\u200d',  # ZERO WIDTH JOINER
+    '\ufeff',  # ZERO WIDTH NO-BREAK SPACE (BOM)
+    '\u2060',  # WORD JOINER
+    '\u2061',  # FUNCTION APPLICATION
+    '\u2062',  # INVISIBLE TIMES
+    '\u2063',  # INVISIBLE SEPARATOR
+    '\u2064',  # INVISIBLE PLUS
+    '\u034f',  # COMBINING GRAPHEME JOINER
+    '\u115f',  # HANGUL CHOSEONG FILLER
+    '\u1160',  # HANGUL JUNGSEONG FILLER
+    '\u3164',  # HANGUL FILLER
+    '\u00a0',  # NO-BREAK SPACE
+    '\u200a',  # HAIR SPACE
+    '\u2009',  # THIN SPACE
+    '\u2006',  # SIX-PER-EM SPACE
+    '\u2007',  # FIGURE SPACE
+    '\u2005',  # FOUR-PER-EM SPACE
+    '\u2004',  # THREE-PER-EM SPACE
+    '\u2003',  # EM SPACE
+    '\u2002',  # EN SPACE
+    '\u2001',  # EM QUAD
+    '\u202f',  # NARROW NO-BREAK SPACE
+    '\u205f',  # MEDIUM MATHEMATICAL SPACE
+    '\u00ad',  # SOFT HYPHEN
+]
+
+# ---------------- Build mapping a-z <-> invisibles ----------------
+char_to_inv = {letter: INVISIBLES[i] for i, letter in enumerate(string.ascii_lowercase)}
+inv_to_char = {v: k for k, v in char_to_inv.items()}
+
+# ---------------- Encode / Decode ----------------
+def encode_blankspaces(text):
+    out = []
+    for ch in text.lower():
+        if ch in char_to_inv:
+            out.append(char_to_inv[ch])
+        elif ch == ' ':
+            out.append(' ')
+        else:
+            out.append(ch)  # keep punctuation
+    return ''.join(out)
+
+def decode_blankspaces(text):
+    out = []
+    for ch in text:
+        if ch == ' ':
+            out.append(' ')
+        elif ch in inv_to_char:
+            out.append(inv_to_char[ch])
+        else:
+            out.append(ch)  # unknown invisible / punctuation
+    return ''.join(out)
+
+# ---------------- Optional: Show mapping ----------------
+def show_mapping():
+    print("Letter -> Unicode codepoint and name")
+    for letter, invis in char_to_inv.items():
+        print(f"{letter} -> U+{ord(invis):04X} ({unicodedata.name(invis, 'UNKNOWN')})")
+    print()
+
+# ---------------- Main loop ----------------
+if __name__ == "__main__":
+    print("Blankspaces Translator (26 unique invisible Unicode characters)")
+    print("Commands:")
+    print("  /translate - encode text to Blankspaces")
+    print("  /decode    - decode Blankspaces to text")
+    print("  /showmap   - show letter->invisible mapping")
+    print("  /exit      - quit\n")
+
+    while True:
+        cmd = input("Enter command: ").strip().lower()
+
+        if cmd == "/translate":
+            text = input("Enter text to encode: ")
+            encoded = encode_blankspaces(text)
+            print("Encoded (invisible output below):")
+            sys.stdout.buffer.write(encoded.encode("utf-8"))
+            sys.stdout.buffer.write(b"\n")
+            sys.stdout.flush()
+            print(f"[{len(encoded)} characters printed invisibly]\n")
+
+        elif cmd == "/decode":
+            encoded = input("Paste invisible text to decode: ")
+            decoded = decode_blankspaces(encoded)
+            print("Decoded:", decoded, "\n")
+
+        elif cmd == "/showmap":
+            show_mapping()
+
+        elif cmd == "/exit":
+            print("Goodbye!")
+            break
+
+        else:
+            print("Unknown command. Use /translate, /decode, /showmap, or /exit.\n")
